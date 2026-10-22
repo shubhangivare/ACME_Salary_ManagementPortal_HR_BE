@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.peoplepay.api.dto.EmployeeRequest;
 import com.peoplepay.api.entity.Employee;
@@ -21,6 +23,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	public List<Employee> employees() {
 		return peopleService.employees();
+	}
+
+	@Override
+	public Page<Employee> searchPage(String search, String department, String country, String status, Pageable pageable) {
+		return peopleService.searchPage(search, department, country, status, pageable);
 	}
 
 	@Override

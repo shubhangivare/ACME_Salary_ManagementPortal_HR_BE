@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +47,11 @@ public class PeopleService {
 	@Transactional(readOnly = true)
 	public List<Employee> employees() {
 		return employees.findAllByOrderByNameAsc();
+	}
+
+	@Transactional(readOnly = true)
+	public Page<Employee> searchPage(String search, String department, String country, String status, Pageable pageable) {
+		return employees.searchPage(search, department, country, status, pageable);
 	}
 
 	@Transactional(readOnly = true)
