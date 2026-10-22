@@ -1,0 +1,21 @@
+package com.peoplepay.api.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.peoplepay.api.dto.EmployeeRequest;
+import com.peoplepay.api.entity.Employee;
+
+public interface EmployeeService {
+	List<Employee> employees();
+
+	Employee employee(String id);
+
+	Employee create(EmployeeRequest request, String username);
+
+	Employee update(String id, EmployeeRequest request, String username);
+
+	Employee deactivate(String id, String username);
+
+	Map<String, Object> importEmployees(List<EmployeeRequest> rows, String username);
+}
