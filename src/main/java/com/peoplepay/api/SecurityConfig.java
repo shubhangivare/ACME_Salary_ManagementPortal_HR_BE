@@ -10,13 +10,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import com.peoplepay.api.repository.AppUserRepository;
 
 @Configuration
 public class SecurityConfig {
@@ -31,20 +32,21 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	UserDetailsService users(PasswordEncoder encoder) {
-		return new InMemoryUserDetailsManager(
-				User.withUsername("admin").password(encoder.encode("admin123")).roles("ADMIN").build(),
-				User.withUsername("hr").password(encoder.encode("hr123")).roles("HR").build());
+	UserDetailsService users(AppUserRepository repository) {
+		return username -> repository.findByUsernameWithRole(username)
+				.map(u -> User.withUsername(u.getUsername()).password(u.getPasswordHash()).roles(u.getRole().getName())
+						.disabled(!u.isEnabled()).build())
+				.orElseThrow(() -> new UsernameNotFoundException("User not found"));
 	}
 
 	@Bean
 	SecurityFilterChain security(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable()).cors(Customizer.withDefaults())
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/login", "/h2-console/**").permitAll()
-						.requestMatchers(HttpMethod.GET, "/api/countries/**").authenticated()
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/roles", "/h2-console/**")
+						.permitAll().requestMatchers(HttpMethod.GET, "/api/countries/**").authenticated()
 						.requestMatchers("/api/countries/**").hasRole("ADMIN")
-						.requestMatchers(HttpMethod.POST, "/api/employees/**", "/api/employees/import",
-								"/api/salary-revisions/**")
+						.requestMatchers(HttpMethod.POST, "/api/employees/**", "/api/salary-revisions/**")
 						.hasAnyRole("ADMIN", "HR").requestMatchers(HttpMethod.PUT, "/api/employees/**")
 						.hasAnyRole("ADMIN", "HR").requestMatchers(HttpMethod.PATCH, "/api/employees/**")
 						.hasAnyRole("ADMIN", "HR").requestMatchers("/api/audit/**").hasRole("ADMIN")

@@ -10025,3 +10025,9 @@ INSERT INTO countries(code,name,currency,symbol,rate_to_inr,updated) VALUES
 ('GB','United Kingdom','GBP','£',109.2000,'2026-10-01'),('IT','Italy','EUR','€',91.4000,'2026-10-01'),
 ('SG','Singapore','SGD','S$',62.1000,'2026-10-01'),('AE','United Arab Emirates','AED','د.إ',22.7000,'2026-10-01');
 INSERT INTO audit_events(username,action,detail) VALUES ('system','APPLICATION_STARTED','Seed data loaded from db.sql'),('system','DATABASE_INITIALIZED','H2 in-memory database initialized from schema.sql');
+
+-- Application roles and initial accounts. Seed passwords are upgraded to BCrypt at startup before the server accepts requests.
+MERGE INTO app_roles (name) KEY(name) VALUES ('ADMIN');
+MERGE INTO app_roles (name) KEY(name) VALUES ('HR');
+MERGE INTO app_users (username,password_hash,display_name,role_id,enabled) KEY(username) SELECT 'admin','{seed}admin123','System Admin',id,TRUE FROM app_roles WHERE name='ADMIN';
+MERGE INTO app_users (username,password_hash,display_name,role_id,enabled) KEY(username) SELECT 'hr','{seed}hr123','HR Manager',id,TRUE FROM app_roles WHERE name='HR';
